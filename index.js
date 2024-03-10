@@ -72,3 +72,89 @@ const products = [
     price: 999.99,
   },
 ];
+const productWrapper = document.getElementById("products-wrapper");
+const checkboxes = document.querySelectorAll(".check");
+const filtersContainer = document.getElementById("filter-container");
+const searchInput = document.getElementById("search");
+const cartCount = document.getElementById("cart-count");
+let cartItemCount = 0;
+let productElements = [];
+
+filtersContainer.addEventListener("change", filterProducts);
+searchInput.addEventListener("input", filterProducts);
+
+products.forEach((product) => {
+  const productElement = createProductElement(product);
+  productElements.push(productElement);
+  productWrapper.appendChild(productElement);
+});
+
+function createProductElement(product) {
+  const productElement = document.createElement("div");
+
+  productElement.className = "item space-y-2";
+
+  productElement.innerHTML = `<div
+  class="bg-gray-100 flex justify-center relative overflow-hidden group cursor-pointer border rounded-xl"
+>
+  <img
+    src="${product.url}"
+    alt="${product.name}"
+    class="w-full h-full object-cover"
+  />
+  <button class="status bg-black text-white absolute bottom-0 left-0 right-0 text-center py-2 translate-y-full transition group-hover:translate-y-0"
+    >Add To Cart</button
+  >
+</div>
+<p class="text-xl">${product.name}</p>
+<strong>$${product.price.toLocaleString()}</strong>`;
+
+  productElement.querySelector(".status").addEventListener("click", updateCart);
+
+  return productElement;
+}
+
+function updateCart(e) {
+  const statusEl = e.target;
+
+  if (statusEl.classList.contains("added")) {
+    statusEl.classList.remove("added");
+    statusEl.innerText = "Add To Cart";
+    statusEl.classList.add("bg-gray-800");
+    statusEl.classList.remove("bg-red-600");
+
+    cartItemCount--;
+  } else {
+    statusEl.classList.add("added");
+    statusEl.innerText = "Remove From Cart";
+    statusEl.classList.remove("bg-gray-800");
+    statusEl.classList.add("bg-red-600");
+
+    cartItemCount++;
+  }
+
+  cartCount.innerText = cartItemCount.toString();
+}
+
+function filterProducts() {
+  // Get search term
+  const searchTerm = searchInput.value.trim().toLowerCase();
+  // Get checked categories
+  const checkedCategories = Array.from(checkboxes)
+    .filter((check) => check.checked)
+    .map((check) => check.id);
+
+  productElements.forEach((productElement, index) => {
+    const product = products[index];
+    const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm);
+    const isInCheckedCategory =
+      checkedCategories.length === 0 ||
+      checkedCategories.includes(product.category);
+
+    if (matchesSearchTerm && isInCheckedCategory) {
+      productElement.classList.remove("hidden");
+    } else {
+      productElement.classList.add("hidden");
+    }
+  });
+}
